@@ -6,14 +6,21 @@ import (
 	"strconv"
 	"time"
 
+<<<<<<< HEAD
 	"../model"
+=======
+	"github.com/task_checker_api/src/model"
+>>>>>>> 225fbed8e2604733903d14e234c2e48bea9df3b4
 
 	"github.com/gin-gonic/gin"
 )
 
 //TasksGET 一覧取得
 func TasksGET(c *gin.Context) {
+<<<<<<< HEAD
 	print("aaa")
+=======
+>>>>>>> 225fbed8e2604733903d14e234c2e48bea9df3b4
 	db := model.DBConnect()
 	result, err := db.Query("SELECT * FROM task ORDER BY id DESC")
 	if err != nil {
