@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,15 +12,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//TasksGET 一覧取得
-func TasksGET(c *gin.Context) {
+//GetTasks 一覧取得
+var GetTasks = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	db := model.DBConnect()
 	result, err := db.Query("SELECT * FROM task ORDER BY id DESC")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	// json返却用
 	tasks := []model.Task{}
 	for result.Next() {
 		task := model.Task{}
@@ -33,13 +33,13 @@ func TasksGET(c *gin.Context) {
 		}
 
 		task.ID = id
+		task.Title = title
 		task.CreatedAt = createdAt
 		task.UpdatedAt = updatedAt
-		task.Title = title
 		tasks = append(tasks, task)
 	}
-	c.JSON(http.StatusOK, gin.H{"tasks": tasks})
-}
+	json.NewEncoder(w).Encode(tasks)
+})
 
 //FindByID タスク検索
 func FindByID(id uint) model.Task {

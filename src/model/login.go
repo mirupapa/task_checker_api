@@ -1,6 +1,7 @@
 package model
 
+//Login login
 type Login struct {
-	UserId   string `form:"userId" json:"userId" binding:"required"`
+	UserID   string `form:"userID" json:"userID" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 }
