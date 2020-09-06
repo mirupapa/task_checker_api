@@ -15,5 +15,9 @@
 # vendor/
 
 memo.md
+<<<<<<< HEAD
+.env
+=======
 .env
 .vscode
+>>>>>>> 225fbed8e2604733903d14e234c2e48bea9df3b4

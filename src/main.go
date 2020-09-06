@@ -14,12 +14,15 @@ import (
 	"github.com/urfave/negroni"
 )
 
-func main() {
+func ENV_load() {
 	err := godotenv.Load(fmt.Sprintf("../%s.env", os.Getenv("GO_ENV")))
 	if err != nil {
 		print("error_env")
 	}
+}
 
+func main() {
+	ENV_load()
 	r := mux.NewRouter()
 	r.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 

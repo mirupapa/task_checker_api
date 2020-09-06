@@ -7,9 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/task_checker_api/src/model"
-
 	"github.com/gin-gonic/gin"
+	"github.com/task_checker_api/src/model"
 )
 
 //GetTasks 一覧取得

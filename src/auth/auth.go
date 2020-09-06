@@ -2,7 +2,6 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -12,9 +11,7 @@ import (
 	"github.com/task_checker_api/src/controller"
 	"github.com/task_checker_api/src/model"
 	"github.com/task_checker_api/src/utils"
-
 	// dotenv
-	"github.com/joho/godotenv"
 )
 
 // LoginHandler handler
@@ -57,10 +54,6 @@ var Login = func(w http.ResponseWriter, r *http.Request) (model.Users, model.Err
 
 // GetToken get token
 var GetToken = func(user model.Users) string {
-	err := godotenv.Load(fmt.Sprintf("./%s.env", os.Getenv("GO_ENV")))
-	if err != nil {
-		print("error_env")
-	}
 	// headerのセット
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -71,9 +64,6 @@ var GetToken = func(user model.Users) string {
 	claims["name"] = user.UserName
 	claims["iat"] = time.Now()
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
-
-	print(os.Getenv("SIGNINGKEY"))
-
 	// 電子署名
 	tokenString, _ := token.SignedString([]byte(os.Getenv("SIGNINGKEY")))
 
