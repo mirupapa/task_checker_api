@@ -7,14 +7,18 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/task_checker_api/src/model"
 )
 
 //GetTasks 一覧取得
 var GetTasks = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	userJwt := r.Context().Value("user")
+	mailAddress := userJwt.(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	db := model.DBConnect()
-	result, err := db.Query("SELECT * FROM task ORDER BY id DESC")
+	result, err := db.Query(`SELECT task.id, task.created_at, task.updated_at, task.title 
+		FROM task INNER JOIN users ON task.user_id = users.id WHERE users.mail_address = $1 ORDER BY id DESC`, mailAddress)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -40,8 +44,8 @@ var GetTasks = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(tasks)
 })
 
-//FindByID タスク検索
-func FindByID(id uint) model.Task {
+//FindTaskByID タスク検索
+func FindTaskByID(id uint) model.Task {
 	db := model.DBConnect()
 	result, err := db.Query("SELECT * FROM task WHERE id = ?", id)
 	if err != nil {
@@ -93,7 +97,7 @@ func TaskPATCH(c *gin.Context) {
 		panic(err.Error())
 	}
 
-	task := FindByID(uint(id))
+	task := FindTaskByID(uint(id))
 
 	fmt.Println(task)
 	c.JSON(http.StatusOK, gin.H{"task": task})

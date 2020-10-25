@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -11,10 +12,11 @@ import (
 	"github.com/task_checker_api/src/controller"
 	"github.com/task_checker_api/src/model"
 	"github.com/task_checker_api/src/utils"
+	"golang.org/x/crypto/bcrypt"
 	// dotenv
 )
 
-// LoginHandler handler
+// LoginHandler ログインハンドラー
 var LoginHandler = func(w http.ResponseWriter, r *http.Request) {
 	user, errorObj := Login(w, r)
 	if errorObj.Message != "" {
@@ -35,8 +37,8 @@ var Login = func(w http.ResponseWriter, r *http.Request) (model.Users, model.Err
 
 	json.NewDecoder(r.Body).Decode(&login)
 
-	if login.UserID == "" {
-		errorObj.Message = "\"UserID\" is missing"
+	if login.MailAddress == "" {
+		errorObj.Message = "\"MailAddress\" is missing"
 		return user, errorObj
 	}
 	if login.Password == "" {
@@ -44,9 +46,9 @@ var Login = func(w http.ResponseWriter, r *http.Request) (model.Users, model.Err
 		return user, errorObj
 	}
 
-	user = controller.LoginCheck(login)
+	user = LoginCheck(login)
 
-	if user.UserID == "" {
+	if user.MailAddress == "" {
 		errorObj.Message = "login error"
 	}
 	return user, errorObj
@@ -60,7 +62,7 @@ var GetToken = func(user model.Users) string {
 	// claimsのセット
 	claims := token.Claims.(jwt.MapClaims)
 	claims["admin"] = true
-	claims["sub"] = user.UserID
+	claims["sub"] = user.MailAddress
 	claims["name"] = user.UserName
 	claims["iat"] = time.Now()
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
@@ -76,4 +78,39 @@ var JwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 		return []byte(os.Getenv("SIGNINGKEY")), nil
 	},
 	SigningMethod: jwt.SigningMethodHS256,
+})
+
+//LoginCheck ログイン判定
+func LoginCheck(login model.Login) model.Users {
+	hashPass := utils.UserPassHash(login.MailAddress, login.Password)
+	fmt.Printf(hashPass)
+	db := model.DBConnect()
+	result, err := db.Query("SELECT mail_address, user_name, password FROM users WHERE mail_address = $1;", login.MailAddress)
+	if err != nil {
+		panic(err.Error())
+	}
+	user := model.Users{}
+	for result.Next() {
+		var mailAddress, userName, password string
+		err = result.Scan(&mailAddress, &userName, &password)
+		if err != nil {
+			panic(err.Error())
+		}
+		err := bcrypt.CompareHashAndPassword([]byte(password), []byte(login.MailAddress+" "+login.Password))
+		if err != nil {
+			panic(err.Error())
+		}
+		user.MailAddress = mailAddress
+		user.UserName = userName
+	}
+	return user
+}
+
+// ExportUserInfo 承認後ユーザー情報返却
+var ExportUserInfo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	userJwt := r.Context().Value("user")
+	mailAddress := userJwt.(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	user := controller.FindUserByMail(mailAddress)
+	w.Write([]byte(mailAddress))
+	json.NewEncoder(w).Encode(user)
 })

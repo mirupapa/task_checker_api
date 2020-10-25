@@ -14,7 +14,8 @@ import (
 	"github.com/urfave/negroni"
 )
 
-func ENV_load() {
+// ENVLoad Env load
+func ENVLoad() {
 	err := godotenv.Load(fmt.Sprintf("../%s.env", os.Getenv("GO_ENV")))
 	if err != nil {
 		print("error_env")
@@ -22,9 +23,17 @@ func ENV_load() {
 }
 
 func main() {
-	ENV_load()
+	ENVLoad()
 	r := mux.NewRouter()
+	// ログイン
 	r.HandleFunc("/login", auth.LoginHandler).Methods("POST")
+	// サインアップ
+	r.HandleFunc("/signUp", auth.SignUpHandler).Methods("POST")
+	// 承認
+	r.Handle("/auth", negroni.New(
+		negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
+		negroni.Wrap(auth.ExportUserInfo),
+	))
 
 	task := r.PathPrefix("/task").Subrouter()
 	{
