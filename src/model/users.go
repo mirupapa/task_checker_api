@@ -1,8 +1,8 @@
 package model
 
+//Users users
 type Users struct {
-	UserId    string
-	UserName  string
-	FirstName string
-	LastName  string
+	UserName    string
+	MailAddress string
+	Password    string
 }

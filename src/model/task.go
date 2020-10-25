@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// Task task
 type Task struct {
 	ID        uint      `json:"id"`         // id
 	CreatedAt time.Time `json:"created_at"` // created_at
