@@ -5,4 +5,5 @@ type Users struct {
 	UserName    string
 	MailAddress string
 	Password    string
+	Token       string
 }

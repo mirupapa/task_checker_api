@@ -23,8 +23,10 @@ var LoginHandler = func(w http.ResponseWriter, r *http.Request) {
 		utils.Respond(w, http.StatusBadRequest, errorObj)
 	} else {
 		token := GetToken(user)
+		user.Token = token
 		// JWTを返却
-		w.Write([]byte(token))
+		// w.Write([]byte(result))
+		json.NewEncoder(w).Encode(user)
 	}
 }
 
@@ -111,6 +113,6 @@ var ExportUserInfo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reques
 	userJwt := r.Context().Value("user")
 	mailAddress := userJwt.(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
 	user := controller.FindUserByMail(mailAddress)
-	w.Write([]byte(mailAddress))
+	// w.Write([]byte(mailAddress))
 	json.NewEncoder(w).Encode(user)
 })

@@ -12,13 +12,27 @@ import (
 	"github.com/task_checker_api/src/model"
 )
 
-//GetTasks 一覧取得
-var GetTasks = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//GetTasksHandler タスク取得
+var GetTasksHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	userJwt := r.Context().Value("user")
 	mailAddress := userJwt.(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	tasks := GetTasks(mailAddress)
+	json.NewEncoder(w).Encode(tasks)
+})
+
+//GetTasks 一覧取得
+func GetTasks(mailAddress string) []model.Task {
 	db := model.DBConnect()
-	result, err := db.Query(`SELECT task.id, task.created_at, task.updated_at, task.title 
-		FROM task INNER JOIN users ON task.user_id = users.id WHERE users.mail_address = $1 ORDER BY id DESC`, mailAddress)
+	result, err := db.Query(`
+		SELECT
+			task.id, task.title, task.done, task.del_flag, task.created_at, task.updated_at
+		FROM 
+			task 
+			INNER JOIN users 
+			ON task.user_id = users.id 
+		WHERE users.mail_address = $1 
+			AND task.del_flag = false
+		ORDER BY sort;`, mailAddress)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -27,22 +41,26 @@ var GetTasks = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	for result.Next() {
 		task := model.Task{}
 		var id uint
-		var createdAt, updatedAt time.Time
 		var title string
+		var done, delFlag bool
+		var createdAt, updatedAt time.Time
 
-		err = result.Scan(&id, &createdAt, &updatedAt, &title)
+		err = result.Scan(&id, &title, &done, &delFlag, &createdAt, &updatedAt)
 		if err != nil {
 			panic(err.Error())
 		}
 
 		task.ID = id
 		task.Title = title
+		task.Done = done
+		task.DelFlag = delFlag
 		task.CreatedAt = createdAt
 		task.UpdatedAt = updatedAt
 		tasks = append(tasks, task)
 	}
-	json.NewEncoder(w).Encode(tasks)
-})
+	db.Close()
+	return tasks
+}
 
 //FindTaskByID タスク検索
 func FindTaskByID(id uint) model.Task {
@@ -83,6 +101,24 @@ func TaskPOST(c *gin.Context) {
 
 	fmt.Printf("post sent. title: %s", title)
 }
+
+//PutDone チェックボックストグル
+var PutDone = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	userJwt := r.Context().Value("user")
+	mailAddress := userJwt.(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	if mailAddress == "" {
+		panic("no authorized")
+	}
+	var task model.Task
+	json.NewDecoder(r.Body).Decode(&task)
+	db := model.DBConnect()
+	_, err := db.Exec("UPDATE task SET done = $1 WHERE id = $2", task.Done, task.ID)
+	if err != nil {
+		panic(err.Error())
+	}
+	db.Close()
+	json.NewEncoder(w).Encode("success")
+})
 
 //TaskPATCH タスク更新
 func TaskPATCH(c *gin.Context) {

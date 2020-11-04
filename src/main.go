@@ -39,14 +39,18 @@ func main() {
 	{
 		task.Handle("/", negroni.New(
 			negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
-			negroni.Wrap(controller.GetTasks),
+			negroni.Wrap(controller.GetTasksHandler),
 		))
+		task.Handle("/done", negroni.New(
+			negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
+			negroni.Wrap(controller.PutDone),
+		)).Methods("PUT")
 	}
 
 	// cors
 	headersOk := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
 	originsOk := handlers.AllowedOrigins([]string{os.Getenv("ORIGIN_ALLOWED")})
-	methodsOk := handlers.AllowedMethods([]string{"OPTIONS", "POST", "GET"})
+	methodsOk := handlers.AllowedMethods([]string{"OPTIONS", "POST", "GET", "PUT"})
 
 	//サーバー起動
 	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headersOk, originsOk, methodsOk)(r)))
