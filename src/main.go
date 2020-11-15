@@ -37,10 +37,22 @@ func main() {
 
 	task := r.PathPrefix("/task").Subrouter()
 	{
-		task.Handle("/", negroni.New(
+		task.Handle("", negroni.New(
 			negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
 			negroni.Wrap(controller.GetTasksHandler),
-		))
+		)).Methods("GET")
+		task.Handle("", negroni.New(
+			negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
+			negroni.Wrap(controller.PostTask),
+		)).Methods("POST")
+		task.Handle("", negroni.New(
+			negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
+			negroni.Wrap(controller.PutTask),
+		)).Methods("PUT")
+		task.Handle("", negroni.New(
+			negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
+			negroni.Wrap(controller.DeleteTask),
+		)).Methods("DELETE")
 		task.Handle("/done", negroni.New(
 			negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
 			negroni.Wrap(controller.PutDone),
@@ -50,7 +62,7 @@ func main() {
 	// cors
 	headersOk := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
 	originsOk := handlers.AllowedOrigins([]string{os.Getenv("ORIGIN_ALLOWED")})
-	methodsOk := handlers.AllowedMethods([]string{"OPTIONS", "POST", "GET", "PUT"})
+	methodsOk := handlers.AllowedMethods([]string{"OPTIONS", "POST", "GET", "PUT", "DELETE"})
 
 	//サーバー起動
 	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headersOk, originsOk, methodsOk)(r)))

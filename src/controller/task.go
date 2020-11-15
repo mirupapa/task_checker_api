@@ -87,20 +87,42 @@ func FindTaskByID(id uint) model.Task {
 	return task
 }
 
-//TaskPOST タスク登録
-func TaskPOST(c *gin.Context) {
+//PostTask タスク新規追加
+var PostTask = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	userJwt := r.Context().Value("user")
+	mailAddress := userJwt.(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	if mailAddress == "" {
+		panic("no authorized")
+	}
+	var task model.Task
+	json.NewDecoder(r.Body).Decode(&task)
 	db := model.DBConnect()
-
-	title := c.PostForm("title")
-	now := time.Now()
-
-	_, err := db.Exec("INSERT INTO task (title, created_at, updated_at) VALUES(?, ?, ?)", title, now, now)
+	_, err := db.Exec("INSERT INTO task (user_id, title, sort, created_at, updated_at) SELECT id, $1, $2, now(), now() FROM users WHERE mail_address=$3;", task.Title, task.
+		Sort, mailAddress)
 	if err != nil {
 		panic(err.Error())
 	}
+	db.Close()
+	json.NewEncoder(w).Encode("success")
+})
 
-	fmt.Printf("post sent. title: %s", title)
-}
+//PutTask タスクタイトル更新
+var PutTask = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	userJwt := r.Context().Value("user")
+	mailAddress := userJwt.(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	if mailAddress == "" {
+		panic("no authorized")
+	}
+	var task model.Task
+	json.NewDecoder(r.Body).Decode(&task)
+	db := model.DBConnect()
+	_, err := db.Exec("UPDATE task SET title = $1 WHERE id = $2", task.Title, task.ID)
+	if err != nil {
+		panic(err.Error())
+	}
+	db.Close()
+	json.NewEncoder(w).Encode("success")
+})
 
 //PutDone チェックボックストグル
 var PutDone = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -139,16 +161,20 @@ func TaskPATCH(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"task": task})
 }
 
-//TaskDELETE タスク削除
-func TaskDELETE(c *gin.Context) {
+//DeleteTask タスク削除
+var DeleteTask = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	userJwt := r.Context().Value("user")
+	mailAddress := userJwt.(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	if mailAddress == "" {
+		panic("no authorized")
+	}
+	var task model.Task
+	json.NewDecoder(r.Body).Decode(&task)
 	db := model.DBConnect()
-
-	id, _ := strconv.Atoi(c.Param("id"))
-
-	_, err := db.Query("DELETE FROM task WHERE id = ?", id)
+	_, err := db.Exec("DELETE FROM task WHERE id = $1", task.ID)
 	if err != nil {
 		panic(err.Error())
 	}
-
-	c.JSON(http.StatusOK, "deleted")
-}
+	db.Close()
+	json.NewEncoder(w).Encode("success")
+})
