@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 	"github.com/task_checker_api/src/model"
 )
+
+var layout = "2006-01-02 15:04:05"
 
 //GetTasksHandler タスク取得
 var GetTasksHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,8 @@ func GetTasks(mailAddress string) []model.Task {
 	db := model.DBConnect()
 	result, err := db.Query(`
 		SELECT
-			task.id, task.title, task.done, task.del_flag, task.created_at, task.updated_at
+			task.id, task.user_id, task.title, task.done, task.del_flag, task.sort, 
+			task.created_at, task.updated_at
 		FROM 
 			task 
 			INNER JOIN users 
@@ -41,19 +42,23 @@ func GetTasks(mailAddress string) []model.Task {
 	for result.Next() {
 		task := model.Task{}
 		var id uint
+		var userId int
 		var title string
 		var done, delFlag bool
+		var sort int
 		var createdAt, updatedAt time.Time
 
-		err = result.Scan(&id, &title, &done, &delFlag, &createdAt, &updatedAt)
+		err = result.Scan(&id, &userId, &title, &done, &delFlag, &sort, &createdAt, &updatedAt)
 		if err != nil {
 			panic(err.Error())
 		}
 
 		task.ID = id
+		task.UserID = userId
 		task.Title = title
 		task.Done = done
 		task.DelFlag = delFlag
+		task.Sort = sort
 		task.CreatedAt = createdAt
 		task.UpdatedAt = updatedAt
 		tasks = append(tasks, task)
@@ -142,25 +147,6 @@ var PutDone = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("success")
 })
 
-//TaskPATCH タスク更新
-func TaskPATCH(c *gin.Context) {
-	db := model.DBConnect()
-
-	id, _ := strconv.Atoi(c.Param("id"))
-	title := c.PostForm("title")
-	now := time.Now()
-
-	_, err := db.Exec("UPDATE task SET title = ?, updated_at=? WHERE id = ?", title, now, id)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	task := FindTaskByID(uint(id))
-
-	fmt.Println(task)
-	c.JSON(http.StatusOK, gin.H{"task": task})
-}
-
 //DeleteTask タスク削除
 var DeleteTask = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	userJwt := r.Context().Value("user")
@@ -176,5 +162,49 @@ var DeleteTask = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 	db.Close()
+	tasks := GetTasks(mailAddress)
+	updateSort(tasks)
 	json.NewEncoder(w).Encode("success")
 })
+
+//UpSort 並べ替え
+var UpSort = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	userJwt := r.Context().Value("user")
+	mailAddress := userJwt.(*jwt.Token).Claims.(jwt.MapClaims)["sub"].(string)
+	if mailAddress == "" {
+		panic("no authorized")
+	}
+	var tasks []model.Task
+	json.NewDecoder(r.Body).Decode(&tasks)
+	updateSort(tasks)
+	json.NewEncoder(w).Encode("success")
+})
+
+//updateSort タスクのソート更新
+func updateSort(tasks []model.Task) {
+	sql := "INSERT INTO task VALUES "
+	for index, task := range tasks {
+		value := ""
+		if index != 0 {
+			value = " ,"
+		}
+		done := "false"
+		if task.Done {
+			done = "true"
+		}
+		delFlag := "false"
+		if task.DelFlag {
+			delFlag = "true"
+		}
+		value += fmt.Sprintf("(%d,%d,'%s','%s',%s,%d,'%s','%s')", task.ID, task.UserID, task.Title, done, delFlag, index, task.CreatedAt.Format(layout), task.UpdatedAt.Format(layout))
+		sql = sql + value
+	}
+	sql = sql + " ON CONFLICT (id) DO UPDATE SET sort = EXCLUDED.sort"
+	fmt.Println(sql)
+	db := model.DBConnect()
+	_, err := db.Exec(sql)
+	if err != nil {
+		panic(err.Error())
+	}
+	db.Close()
+}

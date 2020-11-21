@@ -57,6 +57,10 @@ func main() {
 			negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
 			negroni.Wrap(controller.PutDone),
 		)).Methods("PUT")
+		task.Handle("/upSort", negroni.New(
+			negroni.HandlerFunc(auth.JwtMiddleware.HandlerWithNext),
+			negroni.Wrap(controller.UpSort),
+		)).Methods("PUT")
 	}
 
 	// cors

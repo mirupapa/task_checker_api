@@ -7,6 +7,7 @@ import (
 // Task task
 type Task struct {
 	ID        uint      `json:"id"`         // id
+	UserID    int       `json:"user_id"`    // user_id
 	Title     string    `json:"title"`      // title
 	Done      bool      `json:"done"`       // done
 	Sort      int       `json:"sort"`       // sort
