@@ -7,11 +7,12 @@ import (
 	"os"
 	"time"
 
+	"main/src/controller"
+	"main/src/model"
+	"main/src/utils"
+
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/task_checker_api/src/controller"
-	"github.com/task_checker_api/src/model"
-	"github.com/task_checker_api/src/utils"
 	"golang.org/x/crypto/bcrypt"
 	// dotenv
 )

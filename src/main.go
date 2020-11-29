@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"os"
 
+	"main/src/auth"
+	"main/src/controller"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"github.com/task_checker_api/src/auth"
-	"github.com/task_checker_api/src/controller"
 	"github.com/urfave/negroni"
 )
 

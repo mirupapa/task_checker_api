@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/task_checker_api/src/controller"
-	"github.com/task_checker_api/src/model"
-	"github.com/task_checker_api/src/utils"
+	"main/src/controller"
+	"main/src/model"
+	"main/src/utils"
 )
 
 // SignUpHandler サインアップハンドラー
