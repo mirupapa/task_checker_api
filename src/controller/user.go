@@ -3,8 +3,8 @@ package controller
 import (
 	"time"
 
-	"github.com/task_checker_api/src/model"
-	"github.com/task_checker_api/src/utils"
+	"main/src/model"
+	"main/src/utils"
 )
 
 //FindUserByMail User検索

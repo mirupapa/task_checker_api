@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"time"
 
+	"main/src/model"
+
 	"github.com/dgrijalva/jwt-go"
-	"github.com/task_checker_api/src/model"
 )
 
 var layout = "2006-01-02 15:04:05"
