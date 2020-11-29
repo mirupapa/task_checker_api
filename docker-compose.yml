@@ -1,0 +1,15 @@
+version:  '3'
+services:
+  app:
+    build:  .
+    volumes:
+      - .:/go/src/task_checker
+    networks:
+      - task-checker
+    ports:
+      - 8080:8080
+    networks:
+      - task-checker
+networks:
+  task-checker:
+    external: true
