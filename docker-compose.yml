@@ -10,6 +10,25 @@ services:
       - 8080:8080
     networks:
       - task-checker
+    environment:
+      - ENV=development
+
+  postgresql:
+    image: postgres:12.4
+    container_name: psql
+    ports:
+      - 5555:5432
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: passwd
+    hostname: postgres
+    restart: always
+    user: root
+    networks:
+      - task-checker
+
 networks:
   task-checker:
     external: true
