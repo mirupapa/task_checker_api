@@ -9,3 +9,4 @@ ADD . /go/src/task_checker
 RUN go get -v golang.org/x/tools/gopls 
 RUN go get -v github.com/go-delve/delve/cmd/dlv
 RUN apk add gcc alpine-sdk
+ENV PORT=8080
