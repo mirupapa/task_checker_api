@@ -29,7 +29,7 @@
 		"golang.go"
 	],
 
-	"runArgs": [ "--network=task-checker" ]
+	"runArgs": [ "--network=task-checker", "-e ENV=development " ]
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
