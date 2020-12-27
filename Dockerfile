@@ -1,12 +1,22 @@
-FROM golang:1.14.12-alpine3.12
+FROM golang:1.14.4 as builder
 
-RUN mkdir /go/src/task_checker
+WORKDIR /go/src
 
-WORKDIR /go/src/task_checker
+COPY go.mod go.sum ./
+RUN go mod download
 
-ADD . /go/src/task_checker
+COPY ./src ./src
 
-RUN go get -v golang.org/x/tools/gopls 
-RUN go get -v github.com/go-delve/delve/cmd/dlv
-RUN apk add gcc alpine-sdk
-ENV PORT=8080
+ARG CGO_ENABLED=0
+ARG GOOS=linux
+ARG GOARCH=amd64
+RUN go generate ./src
+RUN go build \
+    -o /go/bin/main \
+    ./src
+
+FROM scratch as runner
+
+COPY --from=builder /go/bin/main /app/main
+
+ENTRYPOINT ["/app/main"]
