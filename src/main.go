@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"main/src/auth"
 	"main/src/controller"
@@ -20,19 +19,19 @@ import (
 func ENVLoad() {
 	env := os.Getenv("ENV")
 	if env == "development" {
-		err := godotenv.Load(fmt.Sprintf("../%s.env", os.Getenv("GO_ENV")))
+		err := godotenv.Load(fmt.Sprintf("./%s.env", os.Getenv("GO_ENV")))
 		if err != nil {
 			print("error_env")
-		}
-		for _, e := range os.Environ() {
-			pair := strings.SplitN(e, "=", 2)
-			fmt.Println(pair[0])
 		}
 	}
 }
 
 func main() {
 	ENVLoad()
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 	r := mux.NewRouter()
 	// ログイン
 	r.HandleFunc("/login", auth.LoginHandler).Methods("POST")
@@ -78,5 +77,5 @@ func main() {
 	methodsOk := handlers.AllowedMethods([]string{"OPTIONS", "POST", "GET", "PUT", "DELETE"})
 
 	//サーバー起動
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headersOk, originsOk, methodsOk)(r)))
+	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(headersOk, originsOk, methodsOk)(r)))
 }
