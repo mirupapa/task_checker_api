@@ -7,7 +7,14 @@ steps:
     args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}']
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'deploy-cloud-run'
-    args: ['beta', 'run', 'deploy', '${_SERVICE_NAME}', '--image', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}', '--region', '${_REGION}' , '--platform', 'managed']
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image=gcr.io/$PROJECT_ID/${_SERVICE_NAME}
+      - --region=${_REGION}
+      - --platform=managed
+      - --set-env-vars=DB_DRIVER=${_DB_DRIVER}
 substitutions:
   _REGION: '${_REGION}'
   _SERVICE_NAME: ${_SERVICE_NAME}
