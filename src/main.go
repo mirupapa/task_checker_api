@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,11 +11,27 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/urfave/negroni"
 )
 
+// ENVLoad Env load
+func ENVLoad() {
+	env := os.Getenv("ENV")
+	if env == "development" {
+		err := godotenv.Load(fmt.Sprintf("./%s.env", os.Getenv("GO_ENV")))
+		if err != nil {
+			print("error_env")
+		}
+	}
+}
+
 func main() {
-	// ENVLoad()
+	ENVLoad()
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 	r := mux.NewRouter()
 	// ログイン
 	r.HandleFunc("/login", auth.LoginHandler).Methods("POST")
@@ -60,5 +77,5 @@ func main() {
 	methodsOk := handlers.AllowedMethods([]string{"OPTIONS", "POST", "GET", "PUT", "DELETE"})
 
 	//サーバー起動
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headersOk, originsOk, methodsOk)(r)))
+	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(headersOk, originsOk, methodsOk)(r)))
 }
