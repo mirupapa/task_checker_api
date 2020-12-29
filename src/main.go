@@ -33,6 +33,10 @@ func main() {
 		port = "8080"
 	}
 	r := mux.NewRouter()
+	env := os.Getenv("ENV")
+	if env != "development" {
+		r.Schemes("https")
+	}
 	// ログイン
 	r.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 	// サインアップ
