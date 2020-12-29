@@ -77,7 +77,7 @@ func main() {
 
 	// cors
 	headersOk := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
-	originsOk := handlers.AllowedOrigins([]string{"*"}) //os.Getenv("ORIGIN_ALLOWED")
+	originsOk := handlers.AllowedOrigins([]string{os.Getenv("ORIGIN_ALLOWED")})
 	methodsOk := handlers.AllowedMethods([]string{"OPTIONS", "POST", "GET", "PUT", "DELETE"})
 
 	//サーバー起動
