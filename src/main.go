@@ -29,6 +29,7 @@ func ENVLoad() {
 func main() {
 	ENVLoad()
 	port := os.Getenv("PORT")
+	print(port)
 	if port == "" {
 		port = "8080"
 	}
