@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"main/src/auth"
 	"main/src/controller"
@@ -23,13 +24,16 @@ func ENVLoad() {
 		if err != nil {
 			print("error_env")
 		}
+		for _, e := range os.Environ() {
+			pair := strings.SplitN(e, "=", 2)
+			fmt.Println(pair[0] + ":" + pair[1])
+		}
 	}
 }
 
 func main() {
 	ENVLoad()
 	port := os.Getenv("PORT")
-	print(port)
 	if port == "" {
 		port = "8080"
 	}
