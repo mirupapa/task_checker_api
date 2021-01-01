@@ -15,7 +15,7 @@ RUN go build \
     -o /go/bin/main \
     ./src
 
-FROM scratch as runner
+FROM gcr.io/cloud-builders/gcloud:latest as runner
 
 WORKDIR /usr/local/bin/
 
