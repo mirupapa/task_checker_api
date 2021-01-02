@@ -26,7 +26,7 @@ func DBConnect() (db *sql.DB) {
 		DBPass   = mustGetenv("DB_PASS")
 		DBHost   = mustGetenv("DB_HOST")
 		DBName   = mustGetenv("DB_NAME")
-		DBPort   = os.Getenv("DB_PORT")
+		DBPort   = mustGetenv("DB_PORT")
 		ENV      = mustGetenv("ENV")
 		DBDriver = mustGetenv("DB_DRIVER")
 	)
@@ -45,6 +45,7 @@ func DBConnect() (db *sql.DB) {
 
 	var dbURI string
 	dbURI = fmt.Sprintf("%s:%s@unix(/%s/%s)/%s?parseTime=true", DBUser, DBPass, socketDir, DBHost, DBName)
+	fmt.Println(dbURI)
 	dbPool, err := sql.Open(DBDriver, dbURI)
 	if err != nil {
 		log.Fatal(err)
