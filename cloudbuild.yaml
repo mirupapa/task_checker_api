@@ -14,6 +14,7 @@ steps:
       - --image=gcr.io/$PROJECT_ID/${_SERVICE_NAME}
       - --region=${_REGION}
       - --platform=managed
+      - --set-env-vars=PROJECT_ID=$PROJECT_ID
       - --set-env-vars=DB_DRIVER=${_DB_DRIVER}
       - --set-env-vars=DB_USER=${_DB_USER}
       - --set-env-vars=DB_PASS=${_DB_PASS}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"main/src/auth"
 	"main/src/controller"
 
+	"cloud.google.com/go/logging"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -31,8 +33,29 @@ func ENVLoad() {
 	}
 }
 
+// Logging Logging
+func Logging() {
+	ctx := context.Background()
+	projectID := os.Getenv("PROJECT_ID")
+	client, err := logging.NewClient(ctx, projectID)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+	defer client.Close()
+
+	// Sets the name of the log to write to.
+	logName := "task-checker-log"
+
+	logger := client.Logger(logName).StandardLogger(logging.Info)
+
+	// Logs "hello world", log entry is visible at
+	// Cloud Logs.
+	logger.Println("logging start")
+}
+
 func main() {
 	ENVLoad()
+	Logging()
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
