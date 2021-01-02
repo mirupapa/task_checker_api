@@ -88,14 +88,14 @@ func LoginCheck(login model.Login) model.Users {
 	hashPass := utils.UserPassHash(login.MailAddress, login.Password)
 	fmt.Printf(hashPass)
 	db := model.DBConnect()
-	fmt.Printf("test1")
+	fmt.Println("test1")
 	result, err := db.Query("SELECT mail_address, user_name, password FROM users WHERE mail_address = $1;", login.MailAddress)
-	fmt.Printf("test2")
+	fmt.Println("test2")
 	if err != nil {
-		fmt.Printf("test3")
+		fmt.Println("test3")
 		panic(err.Error())
 	}
-	fmt.Printf("test4")
+	fmt.Println("test4")
 	user := model.Users{}
 	for result.Next() {
 		var mailAddress, userName, password string
