@@ -33,19 +33,11 @@ func ENVLoad() {
 
 func main() {
 	ENVLoad()
-	for _, e := range os.Environ() {
-		pair := strings.SplitN(e, "=", 2)
-		fmt.Println(pair[0] + ":" + pair[1])
-	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 	r := mux.NewRouter()
-	// env := os.Getenv("ENV")
-	// if env != "development" {
-	// 	r.Schemes("https")
-	// }
 	// ログイン
 	r.HandleFunc("/login", auth.LoginHandler).Methods("POST")
 	// サインアップ
