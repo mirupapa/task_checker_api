@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -10,18 +11,55 @@ import (
 	// dotenv
 )
 
+func mustGetenv(k string) string {
+	v := os.Getenv(k)
+	if v == "" {
+		log.Fatalf("Warning: %s environment variable not set.\n", k)
+	}
+	return v
+}
+
 // DBConnect returns *sql.DB
 func DBConnect() (db *sql.DB) {
-	// env := os.Getenv("ENV")
-	DBName := os.Getenv("DB_NAME")
-	DBDriver := os.Getenv("DB_DRIVER")
-	DBUser := os.Getenv("DB_USER")
-	DBPass := os.Getenv("DB_PASS")
-	DBPort := os.Getenv("DB_PORT")
-	DBHost := os.Getenv("DB_HOST")
-	db, dberr := sql.Open(DBDriver, "host="+DBHost+" port="+DBPort+" user="+DBUser+" password="+DBPass+" dbname="+DBName+" sslmode=disable")
-	if dberr != nil {
-		log.Fatal(dberr)
+	var (
+		DBUser   = mustGetenv("DB_USER")
+		DBPass   = mustGetenv("DB_PASS")
+		DBHost   = mustGetenv("DB_HOST")
+		DBName   = mustGetenv("DB_NAME")
+		DBPort   = os.Getenv("DB_PORT")
+		ENV      = mustGetenv("ENV")
+		DBDriver = mustGetenv("DB_DRIVER")
+	)
+	if ENV == "development" {
+		db, dberr := sql.Open(DBDriver, "host="+DBHost+" port="+DBPort+" user="+DBUser+" password="+DBPass+" dbname="+DBName+" sslmode=disable")
+		if dberr != nil {
+			log.Fatal(dberr)
+		}
+		return db
 	}
-	return db
+
+	socketDir, isSet := os.LookupEnv("DB_SOCKET_DIR")
+	if !isSet {
+		socketDir = "/cloudsql"
+	}
+
+	var dbURI string
+	dbURI = fmt.Sprintf("%s:%s@unix(/%s/%s)/%s?parseTime=true", DBUser, DBPass, socketDir, DBHost, DBName)
+	dbPool, err := sql.Open(DBDriver, dbURI)
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	configureConnectionPool(dbPool)
+
+	return dbPool
+}
+
+// configureConnectionPool sets database connection pool properties.
+// For more information, see https://golang.org/pkg/database/sql
+func configureConnectionPool(dbPool *sql.DB) {
+	dbPool.SetMaxIdleConns(5)
+	dbPool.SetMaxOpenConns(7)
+	dbPool.SetConnMaxLifetime(1800)
 }
