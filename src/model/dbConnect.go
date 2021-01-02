@@ -45,7 +45,7 @@ func DBConnect() (db *sql.DB) {
 	}
 
 	var dbURI string
-	dbURI = fmt.Sprintf("%s:%s@unix(/%s/%s)/%s?parseTime=true", DBUser, DBPass, socketDir, DBHost, DBName)
+	dbURI = fmt.Sprintf("user=%s pasword=%s database=%s host=%s/%s", DBUser, DBPass, DBName, socketDir, DBHost)
 	fmt.Println("dbURI:" + dbURI)
 	dbPool, err := sql.Open(DBDriver, dbURI)
 	if err != nil {
