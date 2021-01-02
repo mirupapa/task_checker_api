@@ -27,10 +27,10 @@ func DBConnect() (db *sql.DB) {
 		DBHost   = mustGetenv("DB_HOST")
 		DBName   = mustGetenv("DB_NAME")
 		DBPort   = mustGetenv("DB_PORT")
-		ENV      = mustGetenv("ENV")
 		DBDriver = mustGetenv("DB_DRIVER")
 	)
-	fmt.Println(ENV)
+	ENV := os.Getenv("ENV")
+	fmt.Println("env:" + ENV)
 	if ENV == "development" {
 		db, dberr := sql.Open(DBDriver, "host="+DBHost+" port="+DBPort+" user="+DBUser+" password="+DBPass+" dbname="+DBName+" sslmode=disable")
 		if dberr != nil {
