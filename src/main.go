@@ -56,6 +56,10 @@ func Logging() {
 func main() {
 	ENVLoad()
 	// Logging()
+	for _, e := range os.Environ() {
+		pair := strings.SplitN(e, "=", 2)
+		fmt.Println(pair[0] + ":" + pair[1])
+	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
