@@ -1,5 +1,0 @@
-runtime: go114
-
-instance_class: F1
-
-service: task-checker-api

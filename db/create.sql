@@ -23,7 +23,3 @@ id serial not null
 , updated_at timestamp not null
 , primary key (id)
 );
-insert into users (user_name, password, mail_address, created_id, created_at, updated_id, updated_at) values ('test_user', '$2a$10$9zrx9F8L0tXicCULPt6Qh.2chvH3RXX9wXF5nmJ7RIlCJt8uzQ59C', 'test@example.com', 'admin', now(), 'admin', now());
-insert into task  (user_id, title, sort, created_at, updated_at) SELECT id, 'task1', 1, now(), now() FROM users WHERE user_name='test_user';
-insert into task  (user_id, title, sort, created_at, updated_at) SELECT id, 'task2', 2, now(), now() FROM users WHERE user_name='test_user';
-insert into task  (user_id, title, done, sort, created_at, updated_at) SELECT id, 'task3', true, 3, now(), now() FROM users WHERE user_name='test_user';

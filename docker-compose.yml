@@ -30,7 +30,3 @@ services:
     user: root
     networks:
       - task-checker
-
-# networks:
-#   task-checker:
-#     external: true
