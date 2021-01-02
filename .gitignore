@@ -16,5 +16,6 @@
 
 memo.md
 *.env
+*.env.prod
 .vscode
 *__debug_bin
