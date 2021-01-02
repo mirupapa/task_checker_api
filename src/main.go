@@ -55,7 +55,7 @@ func Logging() {
 
 func main() {
 	ENVLoad()
-	Logging()
+	// Logging()
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
