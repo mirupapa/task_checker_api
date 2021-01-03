@@ -109,6 +109,10 @@ var PostTask = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 	db.Close()
+	tasks := GetTasks(mailAddress)
+	if len(tasks) > 0 {
+		updateSort(tasks)
+	}
 	json.NewEncoder(w).Encode("success")
 })
 
@@ -164,7 +168,9 @@ var DeleteTask = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}
 	db.Close()
 	tasks := GetTasks(mailAddress)
-	updateSort(tasks)
+	if len(tasks) > 0 {
+		updateSort(tasks)
+	}
 	json.NewEncoder(w).Encode("success")
 })
 
@@ -197,7 +203,7 @@ func updateSort(tasks []model.Task) {
 		if task.DelFlag {
 			delFlag = "true"
 		}
-		value += fmt.Sprintf("(%d,%d,'%s','%s',%s,%d,'%s','%s')", task.ID, task.UserID, task.Title, done, delFlag, index, task.CreatedAt.Format(layout), task.UpdatedAt.Format(layout))
+		value += fmt.Sprintf("(%d,%d,'%s','%s',%s,%d,'%s','%s')", task.ID, task.UserID, task.Title, done, delFlag, index+1, task.CreatedAt.Format(layout), task.UpdatedAt.Format(layout))
 		sql = sql + value
 	}
 	sql = sql + " ON CONFLICT (id) DO UPDATE SET sort = EXCLUDED.sort"
