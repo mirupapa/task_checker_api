@@ -1,4 +1,4 @@
-FROM golang:1.14.12-alpine3.12
+FROM golang:1.14.12
 
 WORKDIR /go/src
 
@@ -11,5 +11,4 @@ RUN go generate ./src
 
 RUN go get -v golang.org/x/tools/gopls 
 RUN go get -v github.com/go-delve/delve/cmd/dlv
-RUN apk add gcc alpine-sdk
 ENV PORT=8080
